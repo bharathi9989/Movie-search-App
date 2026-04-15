@@ -1,4 +1,6 @@
 import axios from "axios";
+import { getCache, setCache } from "../utils/cache";
+
 
 const API_KEY = "e5e97278";
 const BASE_URL = "http://www.omdbapi.com/";

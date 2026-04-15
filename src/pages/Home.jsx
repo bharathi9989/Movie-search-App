@@ -11,16 +11,19 @@ export default function Home() {
     const [error, setError] = useState("");
     const debouncedQuery = useDebounce(query, 500);
 
-    useEffect(() => {
-      if (debouncedQuery) {
-        fetchMovies();
-      }
-    }, [debouncedQuery, page, type]);
+   useEffect(() => {
+     const handleScroll = () => {
+       if (
+         window.innerHeight + document.documentElement.scrollTop >=
+         document.documentElement.offsetHeight - 100
+       ) {
+         setPage((prev) => prev + 1);
+       }
+     };
 
-  useEffect(() => {
-    fetchMovies();
-  }, [page, type]);
-
+     window.addEventListener("scroll", handleScroll);
+     return () => window.removeEventListener("scroll", handleScroll);
+   }, []);
   const fetchMovies = async () => {
     try {
       const data = await searchMovies(query, page, type);

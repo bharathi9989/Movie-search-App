@@ -16,36 +16,26 @@ export default function Home() {
 
   const debouncedQuery = useDebounce(query, 500);
 
+  // 🔥 Reset page when query/type changes
   useEffect(() => {
-    fetchMovies(true);
+    setPage(1);
   }, [debouncedQuery, type]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop >=
-        document.documentElement.offsetHeight - 100
-      ) {
-        setPage((prev) => prev + 1);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
+  // 🔥 Fetch movies when page/query/type changes
   useEffect(() => {
     fetchMovies();
-  }, [page]);
+  }, [debouncedQuery, page, type]);
 
-  const fetchMovies = async (reset = false) => {
+  const fetchMovies = async () => {
     if (!debouncedQuery.trim()) {
       setMovies([]);
       setError("");
       return;
     }
+
     try {
       setLoading(true);
+
       const key = `${debouncedQuery}_${page}_${type}`;
       const cached = getCache(key);
 
@@ -57,16 +47,12 @@ export default function Home() {
         setCache(key, data);
       }
 
-      setMovies((prev) => {
-        const combined = reset ? data.Search : [...prev, ...data.Search];
+      // ✅ Replace movies (pagination mode)
+      const uniqueMovies = Array.from(
+        new Map(data.Search.map((m) => [m.imdbID, m])).values(),
+      );
 
-        const uniqueMovies = Array.from(
-          new Map(combined.map((m) => [m.imdbID, m])).values(),
-        );
-
-        return uniqueMovies;
-      });
-
+      setMovies(uniqueMovies);
       setError("");
     } catch (err) {
       setError(err.message);
@@ -78,20 +64,26 @@ export default function Home() {
 
   return (
     <div className="p-4 bg-gray-900 min-h-screen text-white">
+      {/* 🔍 Search */}
       <SearchBar
         query={query}
         setQuery={setQuery}
         type={type}
         setType={setType}
-        onSearch={() => fetchMovies(true)}
+        onSearch={() => {
+          setPage(1);
+          fetchMovies();
+        }}
       />
 
+      {/* 🧠 Empty state */}
       {!debouncedQuery && (
         <p className="text-center mt-10 text-gray-400">
           Start typing to search movies...
         </p>
       )}
 
+      {/* ❌ Error */}
       {error && debouncedQuery && (
         <p className="text-red-500 text-center mt-4">
           {error === "Movie not found!"
@@ -100,13 +92,37 @@ export default function Home() {
         </p>
       )}
 
+      {/* 🎬 Movies Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {movies.map((m) => (
           <MovieCard key={m.imdbID} movie={m} />
         ))}
       </div>
 
+      {/* ⏳ Loader */}
       {loading && <Loader />}
+
+      {/* 🔥 Pagination */}
+      {movies.length > 0 && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            className="bg-gray-700 px-4 py-2 rounded disabled:opacity-50"
+            disabled={page === 1}
+          >
+            Prev
+          </button>
+
+          <span className="px-4 py-2">Page {page}</span>
+
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            className="bg-gray-700 px-4 py-2 rounded"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

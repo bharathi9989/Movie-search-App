@@ -1,10 +1,12 @@
-import React from 'react'
-import Home from './pages/Home'
+import AppRoutes from "./routes/AppRoutes";
+import { FavoritesProvider } from "./context/FavoritesContext";
 
-export default function App() {
+function App() {
   return (
-    <div>
-      <Home />
-    </div>
-  )
+    <FavoritesProvider>
+      <AppRoutes />
+    </FavoritesProvider>
+  );
 }
+
+export default App;

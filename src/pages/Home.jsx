@@ -39,6 +39,11 @@ export default function Home() {
   }, [page]);
 
   const fetchMovies = async (reset = false) => {
+    if (!debouncedQuery.trim()) {
+      setMovies([]);
+      setError("");
+      return;
+    }
     try {
       setLoading(true);
       const key = `${debouncedQuery}_${page}_${type}`;
@@ -81,7 +86,19 @@ export default function Home() {
         onSearch={() => fetchMovies(true)}
       />
 
-      {error && <p className="text-red-500">{error}</p>}
+      {!debouncedQuery && (
+        <p className="text-center mt-10 text-gray-400">
+          Start typing to search movies...
+        </p>
+      )}
+
+      {error && debouncedQuery && (
+        <p className="text-red-500 text-center mt-4">
+          {error === "Movie not found!"
+            ? "No movies found"
+            : "Something went wrong"}
+        </p>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {movies.map((m) => (

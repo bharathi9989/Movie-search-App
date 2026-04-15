@@ -11,7 +11,16 @@ export const FavoritesProvider = ({ children }) => {
   }, []);
 
   const addFavorite = (movie) => {
+    const exists = favorites.some((m) => m.imdbID === movie.imdbID);
+    if (exists) return;
+
     const updated = [...favorites, movie];
+    setFavorites(updated);
+    localStorage.setItem("fav", JSON.stringify(updated));
+  };
+
+  const removeFavorite = (id) => {
+    const updated = favorites.filter((m) => m.imdbID !== id);
     setFavorites(updated);
     localStorage.setItem("fav", JSON.stringify(updated));
   };

@@ -72,7 +72,7 @@ export default function Home() {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 bg-gray-900 min-h-screen text-white">
       <SearchBar
         query={query}
         setQuery={setQuery}
@@ -83,7 +83,7 @@ export default function Home() {
 
       {error && <p className="text-red-500">{error}</p>}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {movies.map((m) => (
           <MovieCard key={m.imdbID} movie={m} />
         ))}

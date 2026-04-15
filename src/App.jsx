@@ -1,9 +1,10 @@
 import React from 'react'
+import Home from './pages/Home'
 
 export default function App() {
   return (
     <div>
-      <h1 className='text-3xl text-red-500'>Application is Running</h1>
+      <Home />
     </div>
   )
 }

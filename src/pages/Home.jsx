@@ -1,13 +1,21 @@
 import { useState, useEffect } from "react";
 import { searchMovies } from "../api/omdb";
 import MovieCard from "../components/MovieCard";
+import useDebounce from "../hooks/useDebounce";
 
 export default function Home() {
   const [query, setQuery] = useState("batman");
   const [movies, setMovies] = useState([]);
   const [page, setPage] = useState(1);
   const [type, setType] = useState("");
-  const [error, setError] = useState("");
+    const [error, setError] = useState("");
+    const debouncedQuery = useDebounce(query, 500);
+
+    useEffect(() => {
+      if (debouncedQuery) {
+        fetchMovies();
+      }
+    }, [debouncedQuery, page, type]);
 
   useEffect(() => {
     fetchMovies();

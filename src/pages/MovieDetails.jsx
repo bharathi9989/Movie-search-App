@@ -13,9 +13,9 @@ export default function MovieDetails() {
   if (!movie) return <p>Loading...</p>;
 
   return (
-    <div>
-      <img src={movie.Poster} />
-      <h1>{movie.Title}</h1>
+    <div className="p-4">
+      <img src={movie.Poster} className="w-64" />
+      <h1 className="text-2xl font-bold">{movie.Title}</h1>
       <p>{movie.Genre}</p>
       <p>{movie.Plot}</p>
       <p>{movie.Actors}</p>

@@ -1,72 +1,87 @@
 import { useState, useEffect } from "react";
 import { searchMovies } from "../api/omdb";
 import MovieCard from "../components/MovieCard";
+import SearchBar from "../components/SearchBar";
+import Loader from "../components/Loader";
 import useDebounce from "../hooks/useDebounce";
+import { getCache, setCache } from "../utils/cache";
 
 export default function Home() {
-  const [query, setQuery] = useState("batman");
+  const [query, setQuery] = useState("avengers");
   const [movies, setMovies] = useState([]);
   const [page, setPage] = useState(1);
   const [type, setType] = useState("");
-    const [error, setError] = useState("");
-    const debouncedQuery = useDebounce(query, 500);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-   useEffect(() => {
-     const handleScroll = () => {
-       if (
-         window.innerHeight + document.documentElement.scrollTop >=
-         document.documentElement.offsetHeight - 100
-       ) {
-         setPage((prev) => prev + 1);
-       }
-     };
+  const debouncedQuery = useDebounce(query, 500);
 
-     window.addEventListener("scroll", handleScroll);
-     return () => window.removeEventListener("scroll", handleScroll);
-   }, []);
-  const fetchMovies = async () => {
+  useEffect(() => {
+    fetchMovies(true);
+  }, [debouncedQuery, type]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 100
+      ) {
+        setPage((prev) => prev + 1);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    fetchMovies();
+  }, [page]);
+
+  const fetchMovies = async (reset = false) => {
     try {
-      const data = await searchMovies(query, page, type);
-      setMovies(data.Search);
+      setLoading(true);
+      const key = `${debouncedQuery}_${page}_${type}`;
+      const cached = getCache(key);
+
+      let data;
+      if (cached) {
+        data = cached;
+      } else {
+        data = await searchMovies(debouncedQuery, page, type);
+        setCache(key, data);
+      }
+
+      setMovies((prev) => (reset ? data.Search : [...prev, ...data.Search]));
+
       setError("");
     } catch (err) {
-      setError(err);
+      setError(err.message);
       setMovies([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="p-4">
-      {/* Search */}
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="border p-2"
-        placeholder="Search movies..."
+      <SearchBar
+        query={query}
+        setQuery={setQuery}
+        type={type}
+        setType={setType}
+        onSearch={() => fetchMovies(true)}
       />
 
-      <button onClick={fetchMovies}>Search</button>
+      {error && <p className="text-red-500">{error}</p>}
 
-      {/* Filter */}
-      <select onChange={(e) => setType(e.target.value)}>
-        <option value="">All</option>
-        <option value="movie">Movie</option>
-        <option value="series">Series</option>
-      </select>
-
-      {/* Error */}
-      {error && <p>{error}</p>}
-
-      {/* Movies */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {movies.map((m) => (
           <MovieCard key={m.imdbID} movie={m} />
         ))}
       </div>
 
-      {/* Pagination */}
-      <button onClick={() => setPage(page - 1)}>Prev</button>
-      <button onClick={() => setPage(page + 1)}>Next</button>
+      {loading && <Loader />}
     </div>
   );
 }

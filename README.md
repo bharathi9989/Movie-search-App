@@ -48,7 +48,7 @@ Performance Optimizations
 
 📦 Installation & Setup
 
-git clone https://github.com/your-username/movie-search-app.git
+git clone https://github.com/bharathi9989/movie-search-app.git
 cd movie-search-app
 npm install
 npm run dev

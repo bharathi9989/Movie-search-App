@@ -52,7 +52,15 @@ export default function Home() {
         setCache(key, data);
       }
 
-      setMovies((prev) => (reset ? data.Search : [...prev, ...data.Search]));
+      setMovies((prev) => {
+        const combined = reset ? data.Search : [...prev, ...data.Search];
+
+        const uniqueMovies = Array.from(
+          new Map(combined.map((m) => [m.imdbID, m])).values(),
+        );
+
+        return uniqueMovies;
+      });
 
       setError("");
     } catch (err) {
